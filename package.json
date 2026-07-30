@@ -1,0 +1,25 @@
+{
+	"name": "auth",
+	"version": "1.0.0",
+	"description": "",
+	"main": "dist/app.js",
+	"scripts": {
+		"dev": "tsx watch --env-file=.env src/app.ts",
+		"typecheck": "tsc --noEmit",
+		"build": "tsc",
+		"start": "node --env-file=.env dist/app.js"
+	},
+	"keywords": [],
+	"author": "jerick97",
+	"license": "ISC",
+	"type": "module",
+	"devDependencies": {
+		"@types/node": "^26.1.2",
+		"tsx": "^4.23.1",
+		"typescript": "^7.0.2",
+		"@types/express": "^5.0.6"
+	},
+	"dependencies": {
+		"express": "^5.2.1"
+	}
+}

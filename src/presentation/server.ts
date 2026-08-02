@@ -7,14 +7,16 @@ export class Server {
 	public readonly app = express();
 	private readonly port: number;
 	private readonly routes: Router;
-	constructor(option: Options = {}) {
+	constructor(option: Options) {
 		const { port = 3000, routes } = option;
 		this.port = port;
 		this.routes = routes;
 	}
 
 	async start() {
-		this.app.use(express.json());
+		// Middlewares
+		this.app.use(express.json()); //raw json
+		this.app.use(express.urlencoded({ extended: true })); //admitir form-urlencoded
 
 		// Usar las rutas definidas
 		this.app.use(this.routes);

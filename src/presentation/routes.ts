@@ -6,7 +6,6 @@ export class AppRoutes {
 		const router = Router();
 		//Definir todas las rutas principales
 		router.use("/api/auth", AuthRoutes.routes);
-		//router.use("/api/user", AuthRoutes.routes);
 		return router;
 	}
 }

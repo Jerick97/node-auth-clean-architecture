@@ -1,16 +1,19 @@
 import { Request, Response } from "express";
 import type { RequestHandler } from "express";
-import { RegisterUserDto } from "../../domain/index.js";
+import { AuthRepository, RegisterUserDto } from "../../domain/index.js";
 
 export class AuthController {
 	// Inyección de Dependencias
-	constructor() {}
+	constructor(private readonly authRepository: AuthRepository) {}
 
 	registerUser: RequestHandler = (req: Request, res: Response) => {
 		const [error, registerUserDto] = RegisterUserDto.create(req.body);
 
 		if (error) return res.status(400).json({ error });
-		return res.json(registerUserDto);
+		this.authRepository
+			.register(registerUserDto!)
+			.then((user) => res.status(201).json(user))
+			.catch((error) => res.status(500).json(error));
 	};
 
 	loginUser: RequestHandler = (req: Request, res: Response) => {

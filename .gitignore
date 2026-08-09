@@ -28,3 +28,7 @@ coverage/
 .DS_Store
 Thumbs.db
 
+
+# Docker data
+mongo/
+

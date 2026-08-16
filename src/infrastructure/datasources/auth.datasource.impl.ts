@@ -1,3 +1,4 @@
+import { BcryptAdapter } from "../../config/bcrypt.js";
 import { UserModel } from "../../data/mongodb/index.js";
 import {
 	AuthDatasource,
@@ -5,8 +6,16 @@ import {
 	RegisterUserDto,
 	UserEntity,
 } from "../../domain/index.js";
+import { UserMapper } from "../index.js";
+
+type HashFunction = (password: string) => string;
+type CompareFunction = (password: string, hashed: string) => boolean;
 
 export class AuthDatasourceImpl implements AuthDatasource {
+	constructor(
+		private readonly hashPassword: HashFunction = BcryptAdapter.hash,
+		private readonly comparePassword: CompareFunction = BcryptAdapter.compare,
+	) {}
 	async register(registerUserDto: RegisterUserDto): Promise<UserEntity> {
 		const { name, email, password } = registerUserDto;
 		try {
@@ -15,26 +24,22 @@ export class AuthDatasourceImpl implements AuthDatasource {
 				email: email,
 			});
 			if (emailExist) {
-				throw CustomError.badRequest("El usuario ya existe");
+				throw CustomError.badRequest(
+					"No se pudo completar el registro con los datos proporcionados.",
+				);
 			}
 
 			const user = await UserModel.create({
-				name,
-				email,
-				password,
+				name: name,
+				email: email,
+				password: this.hashPassword(password),
 			});
 			// hash de contraseña
 
 			await user.save();
 
 			// mapear la respuesta a nuestra entidad
-			return new UserEntity(
-				user.id,
-				user.name,
-				user.email,
-				user.password,
-				user.roles,
-			);
+			return UserMapper.userEntityFromOnject(user);
 		} catch (error) {
 			if (error instanceof CustomError) {
 				throw error;

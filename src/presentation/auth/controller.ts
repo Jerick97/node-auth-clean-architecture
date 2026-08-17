@@ -5,6 +5,8 @@ import {
 	CustomError,
 	RegisterUserDto,
 } from "../../domain/index.js";
+import { JwtAdapter } from "../../config/index.js";
+import { UserModel } from "../../data/mongodb/index.js";
 
 export class AuthController {
 	// Inyección de Dependencias
@@ -24,11 +26,30 @@ export class AuthController {
 		if (error) return res.status(400).json({ error });
 		this.authRepository
 			.register(registerUserDto!)
-			.then((user) => res.status(201).json(user))
+			.then(async (user) => {
+				const token = await JwtAdapter.generateToken({
+					id: user.id,
+				});
+				res.status(201).json({
+					user,
+					token: token,
+				});
+			})
 			.catch((error) => this.handleError(error, res));
 	};
 
 	loginUser: RequestHandler = (req: Request, res: Response) => {
 		return res.json(req.body);
+	};
+
+	getUsers = (req: Request, res: Response) => {
+		UserModel.find()
+			.then((users) => {
+				return res.json(users);
+			})
+			.catch((error) => {
+				console.error(error);
+				return res.status(500).json({ error: "Internal Server Error" });
+			});
 	};
 }

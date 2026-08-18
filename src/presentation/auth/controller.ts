@@ -45,7 +45,10 @@ export class AuthController {
 	getUsers = (req: Request, res: Response) => {
 		UserModel.find()
 			.then((users) => {
-				return res.json(users);
+				return res.json({
+					//users,
+					user: res.locals.user,
+				});
 			})
 			.catch((error) => {
 				console.error(error);

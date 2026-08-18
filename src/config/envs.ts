@@ -25,4 +25,5 @@ export const envs = {
 	PORT: getPort("PORT"),
 	MONGO_URL: getRequiredString("MONGO_URL"),
 	MONGO_DB_NAME: getRequiredString("MONGO_DB_NAME"),
+	JWT_SEED: getRequiredString("JWT_SEED"),
 } as const;

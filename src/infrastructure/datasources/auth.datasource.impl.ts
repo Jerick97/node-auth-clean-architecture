@@ -4,6 +4,7 @@ import {
 	AuthDatasource,
 	CustomError,
 	RegisterUserDto,
+	LoginUserDto,
 	UserEntity,
 } from "../../domain/index.js";
 import { UserMapper } from "../index.js";
@@ -37,6 +38,36 @@ export class AuthDatasourceImpl implements AuthDatasource {
 			// hash de contraseña
 
 			await user.save();
+
+			// mapear la respuesta a nuestra entidad
+			return UserMapper.userEntityFromOnject(user);
+		} catch (error) {
+			if (error instanceof CustomError) {
+				throw error;
+			}
+			throw CustomError.internalServerError();
+		}
+	}
+	async login(loginUserDto: LoginUserDto): Promise<UserEntity> {
+		const { email, password } = loginUserDto;
+		try {
+			// verificar si el email existe
+			const user = await UserModel.findOne({
+				email: email,
+			});
+			if (!user) {
+				throw CustomError.badRequest(
+					"No se pudo completar el inicio de sesión con los datos proporcionados.",
+				);
+			}
+
+			// verificar la contraseña
+			const isPasswordValid = this.comparePassword(password, user.password);
+			if (!isPasswordValid) {
+				throw CustomError.badRequest(
+					"No se pudo completar el inicio de sesión con los datos proporcionados.",
+				);
+			}
 
 			// mapear la respuesta a nuestra entidad
 			return UserMapper.userEntityFromOnject(user);

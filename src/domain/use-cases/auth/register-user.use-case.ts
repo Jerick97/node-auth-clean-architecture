@@ -1,4 +1,6 @@
-import { AuthRepository, RegisterUserDto } from "../../index.js";
+import jwt from "jsonwebtoken";
+import { JwtAdapter } from "../../../config/jwt.js";
+import { AuthRepository, CustomError, RegisterUserDto } from "../../index.js";
 
 interface UserToken {
 	token: string;
@@ -10,7 +12,10 @@ interface UserToken {
 	};
 }
 
-type SignToken = (payload: Object, duration?: string) => Promise<string | null>;
+type SignToken = (
+	payload: object,
+	duration?: jwt.SignOptions["expiresIn"],
+) => Promise<string | null>;
 
 interface RegisterUserUseCase {
 	execute(registerUserDtp: RegisterUserDto): Promise<any>;
@@ -19,7 +24,7 @@ interface RegisterUserUseCase {
 export class RegisterUser implements RegisterUserUseCase {
 	constructor(
 		private readonly authRepository: AuthRepository,
-		private readonly signToken: SignToken,
+		private readonly signToken: SignToken = JwtAdapter.generateToken,
 	) {}
 
 	async execute(registerUserDtp: RegisterUserDto): Promise<UserToken> {
@@ -27,14 +32,16 @@ export class RegisterUser implements RegisterUserUseCase {
 		const user = await this.authRepository.register(registerUserDtp);
 
 		// token
-		const token = this.signToken({ id: user.id }, "2h");
+		const token = await this.signToken({ id: user.id }, "2h");
+		if (!token)
+			throw CustomError.internalServerError("Error al generar el token");
 		return {
-			token: "token",
+			token,
 			user: {
-				id: "id",
-				name: "name",
-				email: "email",
-				roles: ["roles"],
+				id: user.id,
+				name: user.name,
+				email: user.email,
+				roles: user.role,
 			},
 		};
 	}
